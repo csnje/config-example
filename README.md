@@ -1,27 +1,23 @@
-## About
+# config-example
 
-Example implementation of using a formatted file for configuration in **Rust**.
+A **Rust** example that demonstrates configuration of an application from file
+and environment variable overrides using well known crates.
+The example is specifically for loading a YAML file but may readily be altered
+for other file formats (e.g. JSON).
 
-This is for a YAML file, but can readily be altered for other formats (e.g. JSON).
-
-Makes use of several common packages:
-* [clap](https://crates.io/crates/clap) for command line parsing
-* [serde](https://crates.io/crates/serde) for serialisation and deserialisation
-* [serde_yaml](https://crates.io/crates/serde_yaml) for **serde** YAML support
-
-## Usage
-
-Command line help:
-```bash
-config-example -h
+To show application help:
+```sh
+cargo run -r -- -h
 ```
-
-Generate a template configuration file and exit:
-```bash
-config-example -c config.yaml --genconfig
+To write a configuration file with the default filename:
+```sh
+cargo run -r -- --write-config
 ```
-
-Use a configuration file:
-```bash
-config-example -c config.yaml
+To read a configuration file with the specified filename:
+```sh
+cargo run -r -- --config config.yaml
+```
+To override a configuration file value:
+```sh
+APP__VAL1=21 cargo run -r
 ```

@@ -2,51 +2,68 @@ use std::error::Error;
 use std::fs;
 use std::path::Path;
 
+use config::Config;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
-struct SubConfig {
-    subval1: f64,
-    subval2: Vec<bool>,
-}
+const ENVIRONMENT_VARIABLE_PREFIX: &str = "APP";
+const ENVIRONMENT_VARIABLE_SEPARATOR: &str = "__";
 
-impl Default for SubConfig {
-    fn default() -> Self {
-        Self {
-            subval1: std::f64::consts::PI,
-            subval2: vec![true, false],
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Config {
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Configuration {
     val1: u32,
     val2: String,
-    val3: SubConfig,
+    val3: ChildConfiguration,
 }
 
-impl Default for Config {
+impl Default for Configuration {
     fn default() -> Self {
         Self {
             val1: 42,
             val2: "foobar".to_string(),
-            val3: SubConfig::default(),
+            val3: ChildConfiguration::default(),
         }
     }
 }
 
-impl Config {
-    pub fn from_str(s: &str) -> Result<Config, Box<dyn Error>> {
-        Ok(serde_yaml::from_str(&s)?)
+#[derive(Debug, Deserialize, Serialize)]
+struct ChildConfiguration {
+    val1: f64,
+    val2: Vec<bool>,
+}
+
+impl Default for ChildConfiguration {
+    fn default() -> Self {
+        Self {
+            val1: std::f64::consts::PI,
+            val2: vec![true, false],
+        }
+    }
+}
+
+impl Configuration {
+    pub fn build(path: &Path) -> Result<Self, Box<dyn Error>> {
+        Ok(Config::builder()
+            .add_source(config::File::from(path))
+            .add_source(
+                config::Environment::with_prefix(ENVIRONMENT_VARIABLE_PREFIX)
+                    .separator(ENVIRONMENT_VARIABLE_SEPARATOR),
+            )
+            .build()?
+            .try_deserialize()?)
     }
 
-    pub fn read_from_path(path: &Path) -> Result<Config, Box<dyn Error>> {
-        Ok(Config::from_str(&fs::read_to_string(path)?)?)
+    #[allow(dead_code)]
+    pub fn from_str(s: &str) -> Result<Self, Box<dyn Error>> {
+        Ok(serde_yml::from_str(s)?)
+    }
+
+    #[allow(dead_code)]
+    pub fn read_from_path(path: &Path) -> Result<Self, Box<dyn Error>> {
+        Self::from_str(&fs::read_to_string(path)?)
     }
 
     pub fn to_string(&self) -> Result<String, Box<dyn Error>> {
-        Ok(serde_yaml::to_string(&self)?)
+        Ok(serde_yml::to_string(&self)?)
     }
 
     pub fn write_to_path(&self, path: &Path) -> Result<(), Box<dyn Error>> {
