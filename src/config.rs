@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fs;
 use std::path::Path;
 
@@ -41,7 +40,7 @@ impl Default for ChildConfiguration {
 }
 
 impl Configuration {
-    pub fn build(path: &Path) -> Result<Self, Box<dyn Error>> {
+    pub fn build(path: &Path) -> anyhow::Result<Self> {
         Ok(Config::builder()
             .add_source(config::File::from(path))
             .add_source(
@@ -53,21 +52,21 @@ impl Configuration {
     }
 
     #[allow(dead_code)]
-    pub fn from_str(s: &str) -> Result<Self, Box<dyn Error>> {
-        Ok(serde_yml::from_str(s)?)
-    }
-
-    #[allow(dead_code)]
-    pub fn read_from_path(path: &Path) -> Result<Self, Box<dyn Error>> {
+    pub fn read_from_path(path: &Path) -> anyhow::Result<Self> {
         Self::from_str(&fs::read_to_string(path)?)
     }
 
-    pub fn to_string(&self) -> Result<String, Box<dyn Error>> {
-        Ok(serde_yml::to_string(&self)?)
+    #[allow(dead_code)]
+    pub fn from_str(s: &str) -> anyhow::Result<Self> {
+        Ok(serde_yml::from_str(s)?)
     }
 
-    pub fn write_to_path(&self, path: &Path) -> Result<(), Box<dyn Error>> {
+    pub fn write_to_path(&self, path: &Path) -> anyhow::Result<()> {
         fs::write(path, self.to_string()?.as_bytes())?;
         Ok(())
+    }
+
+    pub fn to_string(&self) -> anyhow::Result<String> {
+        Ok(serde_yml::to_string(&self)?)
     }
 }

@@ -2,7 +2,6 @@ mod config;
 
 use config::Configuration;
 
-use std::error::Error;
 use std::path::Path;
 
 use clap::Parser;
@@ -18,7 +17,7 @@ struct Args {
     write_config: bool,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     if args.write_config {
